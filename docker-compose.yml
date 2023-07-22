@@ -1,0 +1,80 @@
+version: "3"
+services:
+  currency-exchange:
+    image: currency-exchange-service
+    restart: always
+    build: ./currency-exchange-service
+    mem_limit: 700m
+    ports:
+      - 8000:8000 
+    environment: 
+      MYSQL_HOST: mysqldb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_PORT: 3306
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASE-URL: http://zipkin-server:9411/
+      
+    networks:
+      - currency-network
+      
+  mysqldb:
+    container_name: mysqldb
+    image: mysql
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - currency-network
+      
+  naming-server:
+    image: naming-server
+    restart: always
+    build: ./naming-server
+    mem_limit: 700m
+    ports:
+      - 8761:8761
+    environment: 
+      SPRING.ZIPKIN.BASE-URL: http://zipkin-server:9411/
+    networks:
+      - currency-network
+      
+  currency-conversion:
+    image: currency-conversion-service
+    restart: always
+    build: ./currency-conversion-service
+    mem_limit: 700m
+    ports:
+      - 8100:8100 
+    environment: 
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASE-URL: http://zipkin-server:9411/
+    networks:
+      - currency-network
+      
+  api-gateway:
+    image: api-gateway
+    restart: always
+    build: ./api-gateway
+    mem_limit: 700m
+    ports:
+      - 8765:8765
+    environment: 
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASE-URL: http://zipkin-server:9411/
+    networks:
+      - currency-network
+  
+  zipkin-server:
+    image: openzipkin/zipkin
+    restart: always
+    mem_limit: 400m
+    ports:
+      - 9411:9411   
+    networks:
+      - currency-network
+      
+networks:
+  currency-network:

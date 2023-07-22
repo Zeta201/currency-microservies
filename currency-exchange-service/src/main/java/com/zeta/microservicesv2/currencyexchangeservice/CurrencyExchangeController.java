@@ -1,5 +1,7 @@
 package com.zeta.microservicesv2.currencyexchangeservice;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,5 +25,10 @@ public class CurrencyExchangeController {
 		currencyExchange.setEnvironment(environment.getProperty("local.server.port"));
 		
 		return currencyExchange;
+	}
+	
+	@GetMapping("/currency-exchange/")
+	public List<CurrencyExchange> retrieveAll(){
+		return repository.findAll();
 	}
 }
